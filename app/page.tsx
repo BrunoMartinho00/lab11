@@ -58,6 +58,13 @@ export default function Home() {
           >
             Documentation
           </a>
+          <a
+            className="flex h-12 w-full items-center justify-center rounded-full bg-blue-600 text-white px-5 transition-colors hover:bg-blue-700 md:w-[158px]"
+            href="/shop"
+            rel="noopener noreferrer"
+          >
+            Meu Site
+          </a>
         </div>
       </main>
     </div>

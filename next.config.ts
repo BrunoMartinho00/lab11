@@ -1,7 +1,18 @@
-import type { NextConfig } from "next";
+// next.config.js
 
-const nextConfig: NextConfig = {
-  /* config options here */
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    // Configuração para permitir carregamento de imagens de domínios externos
+    images: {
+        remotePatterns: [
+            {
+                protocol: 'https',
+                hostname: 'deisishop.pythonanywhere.com',
+                port: '',
+                pathname: '/media/**', // Permite qualquer caminho dentro de /media
+            },
+        ],
+    },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
