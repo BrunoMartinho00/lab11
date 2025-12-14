@@ -49,10 +49,9 @@ export default function ShopPage() {
     // 1. GESTÃO DE DADOS (SWR)
     const { data: products, error, isLoading } = useSWR<Product[]>(API_URL, fetcher);
     
-    // 2. ESTADOS DO FILTRO E ORDENAÇÃO
+    // 2. ESTADOS DO FILTRO E ORDENAÇÃO (filteredData removido)
     const [search, setSearch] = useState('');
     const [ordenacao, setOrdenacao] = useState('nome_asc');
-    const [filteredData, setFilteredData] = useState<Product[]>([]);
     
     // 3. ESTADOS DO CARRINHO
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -92,7 +91,6 @@ export default function ShopPage() {
         });
     }, []);
     
-    // CORREÇÃO: Função de Compra REAL
     const handlePurchase = useCallback(async (student: boolean, coupon: string) => { 
         if (cart.length === 0) return setPurchaseStatus("Carrinho vazio.");
         
@@ -121,7 +119,6 @@ export default function ShopPage() {
 
             const responseData = await response.json();
 
-            // ✅ CORREÇÃO FINAL: Procura em múltiplos campos (id, orderId, reference)
             const purchaseId = responseData.id || responseData.orderId || responseData.reference || 'N/A';
 
             setCart([]);
@@ -139,23 +136,25 @@ export default function ShopPage() {
     }, [cart]);
 
 
-    // Lógica de Filtro e Ordenação
-    
-    useEffect(() => { 
-        if (products) {
-            const termoPesquisa = search.toLowerCase();
-            const resultadosFiltrados = products.filter(product =>
-                product.title.toLowerCase().includes(termoPesquisa)
-            );
-            setFilteredData(resultadosFiltrados);
-        }
-    }, [search, products]);
-
+    // ✅ Lógica de Filtro e Ordenação Simplificada (UseMemo único)
     const orderedData = useMemo(() => { 
-        let dadosParaOrdenar = filteredData.length > 0 ? [...filteredData] : (products || []);
-        dadosParaOrdenar.sort((a, b) => a.title.localeCompare(b.title)); 
-        return dadosParaOrdenar;
-    }, [filteredData, ordenacao, products, search]);
+        if (!products) return [];
+
+        let dados = products.filter(product =>
+            product.title.toLowerCase().includes(search.toLowerCase())
+        );
+
+        // Lógica de Ordenação completa
+        dados.sort((a, b) => {
+            if (ordenacao === 'nome_asc') return a.title.localeCompare(b.title);
+            if (ordenacao === 'nome_desc') return b.title.localeCompare(a.title);
+            if (ordenacao === 'preco_asc') return parseFloat(a.price) - parseFloat(b.price);
+            if (ordenacao === 'preco_desc') return parseFloat(b.price) - parseFloat(a.price);
+            return 0;
+        });
+        
+        return dados;
+    }, [products, search, ordenacao]);
 
 
     // --- RENDERIZAÇÃO E TRATAMENTO DE ERROS ---
@@ -167,10 +166,11 @@ export default function ShopPage() {
         <div className="main-container">
             <h1 className="title-page">DEISI Shop</h1>
 
-            <div className="content-layout flex flex-col lg:flex-row gap-8">
+            {/* ✅ SIMPLIFICAÇÃO: Usando apenas classes CSS semânticas */}
+            <div className="content-layout"> 
                 
                 <div className="products-column">
-                    <div className="controls-bar flex flex-col sm:flex-row justify-between items-center gap-4">
+                    <div className="controls-bar">
                         
                         <input
                             type="text"
@@ -195,7 +195,7 @@ export default function ShopPage() {
                         <p className="filter-no-results">Nenhum produto encontrado com o termo: "{search}"</p>
                     )}
 
-                    <div className="product-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                    <div className="product-grid">
                         {orderedData.map((produto) => (
                             <ProdutoCardPuro 
                                 key={produto.id} 

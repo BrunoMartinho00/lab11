@@ -5,9 +5,9 @@ import React from 'react';
 import useSWR from 'swr';
 import { Product } from '@/models/interfaces';
 import { ProdutoDetalhe } from '@/components/ProdutoDetalhe/ProdutoDetalhe';
-import { CartItem } from '@/app/shop/page'; // Importa a interface para tipagem
+import { CartItem } from '@/app/shop/page'; 
 
-// --- LÓGICA DE MANIPULAÇÃO DO LOCAL STORAGE (REPLICADA) ---
+// --- LÓGICA DE MANIPULAÇÃO DO LOCAL STORAGE (MANTIDA CLARA) ---
 
 const CART_STORAGE_KEY = 'deisiShopCart';
 
@@ -20,12 +20,10 @@ const getCartFromStorage = (): CartItem[] => {
 const saveCartToStorage = (cart: CartItem[]): void => {
     if (typeof window !== 'undefined') {
         localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
-        // Dispara evento para que shop/page.tsx reaja
         window.dispatchEvent(new Event('storage')); 
     }
 };
 
-// Função de adição real usada no componente de Detalhes
 const handleAddToCartReal = (product: Product) => {
     const currentCart = getCartFromStorage();
     const itemIndex = currentCart.findIndex(item => item.id === product.id);
@@ -42,15 +40,7 @@ const handleAddToCartReal = (product: Product) => {
     alert(`"${product.title}" adicionado(s) ao carrinho!`);
 };
 
-// --- FIM DA LÓGICA DE MANIPULAÇÃO ---
-
-const Spinner = () => (
-// ... (código Spinner)
-  <div className="spinner-box">
-    <div className="spinner-loader"></div>
-    <p className="spinner-text">A carregar detalhes...</p>
-  </div>
-);
+// --- FUNÇÃO FETCH (SWR) ---
 
 const fetcher = async (url: string) => {
   const res = await fetch(url);
@@ -76,13 +66,18 @@ export const ProdutoDetalheFetcher: React.FC<ProdutoDetalheFetcherProps> = ({ pr
   }
 
   if (isLoading || !product) {
-    return <Spinner />;
+    return (
+      <div className="spinner-box">
+        <div className="spinner-loader"></div>
+        <p className="spinner-text">A carregar detalhes...</p>
+      </div>
+    );
   }
   
   return (
     <ProdutoDetalhe
       product={product}
-      onAddToCart={handleAddToCartReal} // Usamos a função REAL que manipula o localStorage
+      onAddToCart={handleAddToCartReal}
     />
   );
 };

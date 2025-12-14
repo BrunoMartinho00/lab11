@@ -11,9 +11,10 @@ interface CarrinhoProps {
     purchaseStatus: string;
 }
 
+// Item individual no Carrinho
 const CartItemComponent: React.FC<{ item: CartItem, onRemove: (id: number) => void }> = ({ item, onRemove }) => (
-    <div className="flex justify-between items-center cart-item-line">
-        <div className="flex-grow">
+    <div className="cart-item-line"> 
+        <div className="cart-item-info"> 
             <p className="cart-item-title">{item.title} (x{item.quantity})</p>
             <p className="cart-item-details">Preço: {parseFloat(item.price).toFixed(2)} €</p>
         </div>
@@ -64,25 +65,25 @@ export const CarrinhoPuro: React.FC<CarrinhoProps> = ({ cart, onRemoveFromCart, 
 
             <div className="cart-summary">
                 
-                <div className="cart-subtotal-line flex justify-between">
+                <div className="cart-subtotal-line">
                     <span>Subtotal:</span>
                     <span>{totalCusto} €</span>
                 </div>
                 
                 {parseFloat(totalComDesconto) !== parseFloat(totalCusto) && (
-                    <div className="cart-discount-applied flex justify-between">
+                    <div className="cart-discount-applied"> 
                         <span>Desconto Aplicado:</span>
                         <span>-{(parseFloat(totalCusto) - parseFloat(totalComDesconto)).toFixed(2)} €</span>
                     </div>
                 )}
                 
-                <div className="cart-total-line flex justify-between">
+                <div className="cart-total-line">
                     <span>Total Final:</span>
                     <span className="cart-total-price">{totalComDesconto} €</span>
                 </div>
 
                 <div className="cart-discount-options">
-                    <label className="discount-label flex items-center">
+                    <label className="discount-label"> 
                         <input 
                             type="checkbox" 
                             className="discount-checkbox" 

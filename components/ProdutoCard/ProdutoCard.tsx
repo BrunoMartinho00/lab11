@@ -4,14 +4,21 @@
 import React from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation'; // <-- 1. Importar useRouter
+import { useRouter } from 'next/navigation';
 import { Product } from '@/models/interfaces'; 
 
-// Importa a interface CartItem para a prop onAddToCart
-import { CartItem } from '@/app/shop/page'; 
+// 📌 DEFINIR BASE AQUI
+const IMAGE_BASE_URL = 'https://deisishop.pythonanywhere.com';
 
-// SOLUÇÃO PARA AS IMAGENS (Necessário para o componente Image)
-const imageLoader = ({ src }: { src: string }) => src; 
+// FUNÇÃO PARA GARANTIR URL ABSOLUTA (CORREÇÃO DO ERRO 400)
+// É mais robusta do que a simples concatenação
+const ensureAbsoluteUrl = (path: string) => {
+    if (path.startsWith('http')) {
+        return path;
+    }
+    // Concatena a base, removendo a barra inicial se existir no path da API
+    return `${IMAGE_BASE_URL}${path.startsWith('/') ? path : '/' + path}`;
+};
 
 interface ProductCardProps {
     product: Product;
@@ -19,35 +26,33 @@ interface ProductCardProps {
 }
 
 export const ProdutoCardPuro: React.FC<ProductCardProps> = ({ product, onAddToCart }) => {
-    const router = useRouter(); // <-- 2. Inicializar router
+    const router = useRouter(); 
     
-    const IMAGE_BASE_URL = 'https://deisishop.pythonanywhere.com';
-    const imageUrl = `${IMAGE_BASE_URL}${product.image}`;
+    const imageUrl = ensureAbsoluteUrl(product.image); 
     
-    // Formatação de Preço para 2 casas decimais
+    // Formatação de Preço
     const formattedPrice = parseFloat(product.price).toFixed(2);
     
-    // 3. Função para navegar para a página de detalhes
+    // Função para navegar
     const navigateToDetails = () => {
-        // Usa o caminho dinâmico: /shop/[id]
         router.push(`/shop/${product.id}`); 
     };
 
     return (
         <div 
-            className="card-container flex flex-col items-center"
-            onClick={navigateToDetails} // <-- AÇÃO: Clicar no container navega
-            style={{ cursor: 'pointer' }} // <-- Boa prática de UX
+            className="card-container"
+            onClick={navigateToDetails}
+            style={{ cursor: 'pointer' }}
         >
-            <div className="card-image-wrapper w-full relative">
+            <div className="card-image-wrapper">
                 <Image
-                    loader={imageLoader} 
+                    loading="eager" // Otimização LCP
                     src={imageUrl}
                     alt={product.title}
                     fill
                     style={{ objectFit: 'contain' }}
                     sizes="(max-width: 768px) 100vw, 33vw"
-                    className="rounded-t-lg"
+                    className="card-image"
                 />
             </div>
 
@@ -60,8 +65,8 @@ export const ProdutoCardPuro: React.FC<ProductCardProps> = ({ product, onAddToCa
             </div>
 
             <div 
-                className="card-actions flex justify-between w-full"
-                onClick={(e) => e.stopPropagation()} // <-- AÇÃO CRÍTICA: Impede que o clique nos botões ative a navegação do card
+                className="card-actions"
+                onClick={(e) => e.stopPropagation()}
             >
                 <button 
                     className="btn-add-cart"
@@ -70,7 +75,6 @@ export const ProdutoCardPuro: React.FC<ProductCardProps> = ({ product, onAddToCa
                     Adicionar ao Cart
                 </button>
                 
-                {/* O botão +info já usa o caminho /shop/[id] */}
                 <Link href={`/shop/${product.id}`} className="btn-info">
                     +info
                 </Link>
