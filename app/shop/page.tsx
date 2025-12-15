@@ -52,6 +52,7 @@ export default function ShopPage() {
     // 2. ESTADOS DO FILTRO E ORDENAÇÃO (filteredData removido)
     const [search, setSearch] = useState('');
     const [ordenacao, setOrdenacao] = useState('nome_asc');
+    const [categoria, setCategoria] = useState('all');
     
     // 3. ESTADOS DO CARRINHO
     const [cart, setCart] = useState<CartItem[]>([]);
@@ -140,21 +141,36 @@ export default function ShopPage() {
     const orderedData = useMemo(() => { 
         if (!products) return [];
 
-        let dados = products.filter(product =>
-            product.title.toLowerCase().includes(search.toLowerCase())
-        );
+        let dados = products.filter(product => {
+            // 1. FILTRO POR PESQUISA (Search Filter)
+            const matchesSearch = product.title.toLowerCase().includes(search.toLowerCase());
+            
+            // 2. FILTRO POR CATEGORIA (Category Filter)
+            const matchesCategory = categoria === 'all' || product.category === categoria;
+
+            // Retorna se o produto satisfaz AMBOS os filtros
+            return matchesSearch && matchesCategory;
+        });
 
         // Lógica de Ordenação completa
-        dados.sort((a, b) => {
+        dados.sort((a, b): number => {
             if (ordenacao === 'nome_asc') return a.title.localeCompare(b.title);
             if (ordenacao === 'nome_desc') return b.title.localeCompare(a.title);
             if (ordenacao === 'preco_asc') return parseFloat(a.price) - parseFloat(b.price);
             if (ordenacao === 'preco_desc') return parseFloat(b.price) - parseFloat(a.price);
+            if (ordenacao === 'avaliacoes_adesc') return b.rating.rate - a.rating.rate;
             return 0;
         });
         
         return dados;
-    }, [products, search, ordenacao]);
+    }, [products, search, ordenacao, categoria]);
+
+    // ✅ NOVO useMemo para extrair categorias únicas
+    const uniqueCategories = useMemo(() => {
+        if (!products) return [];
+        // Cria um Set (coleção de valores únicos) e converte de volta para Array
+        return [...new Set(products.map(p => p.category))].sort();
+    }, [products]);
 
 
     // --- RENDERIZAÇÃO E TRATAMENTO DE ERROS ---
@@ -180,6 +196,18 @@ export default function ShopPage() {
                             onChange={(e) => setSearch(e.target.value)}
                         />
                         <select
+                            className="sort-select" // Pode reutilizar a classe CSS se quiser
+                            value={categoria}
+                            onChange={(e) => setCategoria(e.target.value)}
+                        >
+                            <option value="all">Todas as Categorias</option>
+                            {uniqueCategories.map(cat => (
+                                <option key={cat} value={cat}>
+                                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                                </option>
+                            ))}
+                        </select>
+                        <select
                             className="sort-select"
                             value={ordenacao}
                             onChange={(e) => setOrdenacao(e.target.value)}
@@ -188,6 +216,7 @@ export default function ShopPage() {
                             <option value="nome_desc">Nome (Z-A)</option>
                             <option value="preco_asc">Preço (Crescente)</option>
                             <option value="preco_desc">Preço (Decrescente)</option>
+                            <option value="avaliacoes_adesc">Avaliações (Decrescente)</option>
                         </select>
                     </div>
 

@@ -38,6 +38,7 @@ export const CarrinhoPuro: React.FC<CarrinhoProps> = ({ cart, onRemoveFromCart, 
         
         if (isDeisiStudent) desconto += totalNumerico * 0.10;
         if (coupon.toLowerCase() === 'deisi20') desconto += totalNumerico * 0.20;
+        if (coupon.toLowerCase() === 'deisi50') desconto += totalNumerico * 0.50;
         
         const precoFinal = (totalNumerico - desconto) > 0 ? (totalNumerico - desconto) : 0;
 
